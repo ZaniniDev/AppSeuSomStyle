@@ -6,3 +6,5 @@ python-dotenv==1.2.2
 requests==2.33.1
 spotipy==2.26.0
 uvicorn==0.42.0
+itsdangerous==2.2.0
+SQLAlchemy==2.0.49

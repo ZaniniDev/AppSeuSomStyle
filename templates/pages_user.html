@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SeuSomStyle — Olá, {{ nome_usuario }}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <style>
+    :root {
+      --green: #1DB954;
+      --green-dark: #158a3e;
+      --green-glow: rgba(29, 185, 84, 0.15);
+      --bg: #0a0a0a;
+      --surface: #141414;
+      --surface2: #1c1c1c;
+      --border: rgba(255, 255, 255, 0.07);
+      --border-hover: rgba(29, 185, 84, 0.35);
+      --text-muted: #888;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: #fff;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 80px;
+    }
+
+    /* ── Glow radial de fundo ── */
+    .bg-glow {
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 900px;
+      height: 900px;
+      background: radial-gradient(circle, rgba(29, 185, 84, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Logo no topo ── */
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      text-decoration: none;
+      opacity: 0.9;
+      margin-bottom: 48px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .logo .dot { color: var(--green); }
+
+    /* ── Container principal ── */
+    .container {
+      width: 100%;
+      max-width: 480px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Saudação ── */
+    .greeting {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .greeting .badge-user {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--green-glow);
+      border: 1px solid rgba(29, 185, 84, 0.3);
+      color: var(--green);
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .greeting h1 {
+      font-size: clamp(1.6rem, 5vw, 2rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    .greeting h1 span { color: var(--green); }
+
+    .greeting p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ── Menu de ações ── */
+    .menu {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 20px;
+      text-decoration: none;
+      color: #fff;
+      cursor: pointer;
+      transition: border-color 0.25s, background 0.25s, transform 0.2s, box-shadow 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .menu-item:hover {
+      border-color: var(--border-hover);
+      background: var(--surface2);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(29, 185, 84, 0.1);
+      color: #fff;
+    }
+
+    .menu-item:active {
+      transform: translateY(0);
+    }
+
+    .menu-item .item-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--green-glow);
+      border: 1px solid rgba(29, 185, 84, 0.2);
+      border-radius: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      color: var(--green);
+      flex-shrink: 0;
+      transition: background 0.25s, border-color 0.25s;
+    }
+
+    .menu-item:hover .item-icon {
+      background: rgba(29, 185, 84, 0.22);
+      border-color: rgba(29, 185, 84, 0.45);
+    }
+
+    .menu-item .item-text {
+      flex: 1;
+    }
+
+    .menu-item .item-title {
+      font-size: 0.97rem;
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+
+    .menu-item .item-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .menu-item .item-arrow {
+      font-size: 1rem;
+      color: #444;
+      transition: color 0.25s, transform 0.25s;
+      flex-shrink: 0;
+    }
+
+    .menu-item:hover .item-arrow {
+      color: var(--green);
+      transform: translateX(3px);
+    }
+
+    /* ── Item desconectar (destaque vermelho) ── */
+    .menu-item.danger:hover {
+      border-color: rgba(231, 76, 60, 0.4);
+      box-shadow: 0 8px 32px rgba(231, 76, 60, 0.08);
+    }
+
+    .menu-item.danger .item-icon {
+      background: rgba(231, 76, 60, 0.1);
+      border-color: rgba(231, 76, 60, 0.2);
+      color: #e74c3c;
+    }
+
+    .menu-item.danger:hover .item-icon {
+      background: rgba(231, 76, 60, 0.18);
+      border-color: rgba(231, 76, 60, 0.4);
+    }
+
+    .menu-item.danger:hover .item-arrow {
+      color: #e74c3c;
+    }
+
+    /* ── Separador entre seções ── */
+    .separator {
+      height: 1px;
+      background: var(--border);
+      margin: 8px 0;
+    }
+
+    /* ── Botão de ajuda flutuante ── */
+    .help-btn {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      width: 48px;
+      height: 48px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      cursor: pointer;
+      transition: border-color 0.25s, color 0.25s, background 0.25s, transform 0.2s, box-shadow 0.25s;
+      z-index: 50;
+    }
+
+    .help-btn:hover {
+      border-color: rgba(29, 185, 84, 0.4);
+      color: var(--green);
+      background: var(--surface2);
+      transform: scale(1.1);
+      box-shadow: 0 0 20px rgba(29, 185, 84, 0.15);
+    }
+
+    /* ── Modal de ajuda ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px 20px 0 0;
+      padding: 32px 28px 40px;
+      width: 100%;
+      max-width: 480px;
+      transform: translateY(40px);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.open .modal {
+      transform: translateY(0);
+    }
+
+    .modal-handle {
+      width: 36px;
+      height: 4px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 2px;
+      margin: 0 auto 24px;
+    }
+
+    .modal h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal h2 i { color: var(--green); }
+
+    .modal p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+      margin-bottom: 12px;
+    }
+
+    .modal p:last-child { margin-bottom: 0; }
+
+    .modal a {
+      color: var(--green);
+      text-decoration: none;
+    }
+
+    .modal a:hover { text-decoration: underline; }
+
+    .modal-close {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 24px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .modal-close:hover {
+      background: rgba(255,255,255,0.09);
+      color: #fff;
+    }
+
+    /* ── Fade in da página ── */
+    body { animation: fade-in 0.4s ease; }
+
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 400px) {
+      .menu-item { padding: 16px; gap: 12px; }
+      .menu-item .item-icon { width: 42px; height: 42px; font-size: 1.1rem; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="bg-glow"></div>
+
+  <!-- Logo -->
+  <a href="/" class="logo">
+    <i class="bi bi-music-note-beamed"></i>SeuSomStyle<span class="dot">.</span>
+  </a>
+
+  <div class="container">
+
+    <!-- Saudação -->
+    <div class="greeting">
+      <div class="badge-user">
+        <i class="bi bi-spotify"></i> Conectado ao Spotify
+      </div>
+      <h1>Olá, <span>{{ nome_usuario }}</span>!</h1>
+      <p>O que você quer fazer hoje?</p>
+    </div>
+
+    <!-- Opções principais -->
+    <div class="menu">
+
+      <a href="/minhas-musicas" class="menu-item">
+        <div class="item-icon"><i class="bi bi-heart-fill"></i></div>
+        <div class="item-text">
+          <div class="item-title">Ver músicas curtidas</div>
+          <div class="item-desc">Explore sua biblioteca e crie playlists manualmente</div>
+        </div>
+        <i class="bi bi-chevron-right item-arrow"></i>
+      </a>
+
+      <a href="/playlist-genero" class="menu-item">
+        <div class="item-icon"><i class="bi bi-collection-play-fill"></i></div>
+        <div class="item-text">
+          <div class="item-title">Criar playlists por gênero</div>
+          <div class="item-desc">Agrupe suas músicas curtidas por estilo musical</div>
+        </div>
+        <i class="bi bi-chevron-right item-arrow"></i>
+      </a>
+
+      <a href="/playlist-inteligente" class="menu-item">
+        <div class="item-icon"><i class="bi bi-stars"></i></div>
+        <div class="item-text">
+          <div class="item-title">Criar playlists inteligentes</div>
+          <div class="item-desc">IA monta a trilha sonora perfeita para o seu momento</div>
+        </div>
+        <i class="bi bi-chevron-right item-arrow"></i>
+      </a>
+
+      <div class="separator"></div>
+
+      <a href="/logout" class="menu-item danger">
+        <div class="item-icon"><i class="bi bi-box-arrow-right"></i></div>
+        <div class="item-text">
+          <div class="item-title">Desconectar do aplicativo</div>
+          <div class="item-desc">Encerra sua sessão no SeuSomStyle</div>
+        </div>
+        <i class="bi bi-chevron-right item-arrow"></i>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- Botão de ajuda flutuante -->
+  <button class="help-btn" onclick="openHelp()" title="Ajuda">
+    <i class="bi bi-question-lg"></i>
+  </button>
+
+  <!-- Modal de ajuda -->
+  <div class="modal-overlay" id="helpModal" onclick="closeHelpOutside(event)">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h2><i class="bi bi-question-circle-fill"></i> Como usar o SeuSomStyle?</h2>
+      <p>
+        <strong>Ver músicas curtidas</strong> — Visualize todas as músicas que você curtiu no Spotify,
+        selecione as que quiser e crie uma playlist em segundos.
+      </p>
+      <p>
+        <strong>Criar playlists por gênero</strong> — O app analisa sua biblioteca e agrupa as músicas
+        por estilo: funk, rock, pop, eletrônico e muito mais.
+      </p>
+      <p>
+        <strong>Criar playlists inteligentes</strong> — Descreva o momento (treino, churrasco, estudo...)
+        e a IA escolhe as músicas certas pra você.
+      </p>
+      <p>
+        Dúvidas ou sugestões? Fale comigo pelo
+        <a href="https://wa.me/5513991550539?text=Olá!%20Tenho%20uma%20dúvida%20sobre%20o%20SeuSom%20%F0%9F%8E%B5" target="_blank">WhatsApp</a>
+        ou abra uma
+        <a href="https://github.com/ZaniniDev" target="_blank">issue no GitHub</a>.
+      </p>
+      <button class="modal-close" onclick="closeHelp()">
+        <i class="bi bi-x-lg"></i> Fechar
+      </button>
+    </div>
+  </div>
+
+  <script>
+    function openHelp() {
+      document.getElementById('helpModal').classList.add('open');
+    }
+
+    function closeHelp() {
+      document.getElementById('helpModal').classList.remove('open');
+    }
+
+    function closeHelpOutside(e) {
+      if (e.target === document.getElementById('helpModal')) closeHelp();
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeHelp();
+    });
+  </script>
+
+</body>
+</html>

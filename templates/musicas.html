@@ -205,29 +205,29 @@
         <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
           <div
             class="music-card p-3 d-flex align-items-center gap-3"
-            data-id="{{ musica.id }}"
-            data-nome="{{ musica.nome | e }}"
+            data-id="{{ musica.spotify_id }}"
+            data-nome="{{ musica.name | e }}"
             onclick="toggleCard(this)"
           >
-            {% if musica.imagem %}
-            <img src="{{ musica.imagem }}" alt="Album" class="album-img" />
+            {% if musica.image_url %}
+            <img src="{{ musica.image_url }}" alt="Album" class="album-img" />
             {% else %}
             <div class="album-img-placeholder">
               <i class="bi bi-music-note text-secondary fs-4"></i>
             </div>
             {% endif %}
             <div class="flex-grow-1 overflow-hidden">
-              <div class="track-name" title="{{ musica.nome | e }}">
-                {{ musica.nome }}
+              <div class="track-name" title="{{ musica.name | e }}">
+                {{ musica.name }}
               </div>
-              <div class="artist-name">{{ musica.artista }}</div>
+              <div class="artist-name">{{ musica.artist_name }}</div>
             </div>
             <div class="ms-auto" onclick="event.stopPropagation()">
               <input
                 class="form-check-input music-checkbox"
                 type="checkbox"
-                data-id="{{ musica.id }}"
-                data-nome="{{ musica.nome | e }}"
+                data-id="{{ musica.spotify_id }}"
+                data-nome="{{ musica.name | e }}"
                 onchange="atualizarContador()"
               />
             </div>
