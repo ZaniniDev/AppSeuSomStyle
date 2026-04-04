@@ -37,7 +37,6 @@ logger = logging.getLogger("AppSeuSomStyle")
 # Configurações do ambiente
 CLIENT_ID = os.getenv("CLIENT_ID_SPOTIFY")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET_SPOTIFY")
-print(CLIENT_SECRET)
 URL_CALL_BACK = os.getenv("URL_CALL_BACK_SPOTIFY")
 SECRET_KEY = os.getenv("SECRET_KEY", "chave_mestra_segura_123")
 
@@ -78,7 +77,7 @@ def home(request: Request):
 def login(request: Request):
     # Se já tiver os dados na sessão, pula o login do Spotify
     if "token_info" in request.session:
-        return RedirectResponse(url="/minhas-musicas")
+        return RedirectResponse(url="/pages-user")
     
     auth_url = sp_oauth.get_authorize_url()
     return RedirectResponse(auth_url)
@@ -109,6 +108,7 @@ def callback(request: Request, code: str, db: Session = Depends(get_db)):
         )
         db.add(user)
         db.flush()
+        db.commit()
         logger.info(f"Usuário '{request.session['user_name']}' logado e dados salvos na sessão.")
     else:
         user.access_token = token_info["access_token"]
@@ -119,12 +119,12 @@ def callback(request: Request, code: str, db: Session = Depends(get_db)):
     
     logger.info(f"Usuário '{request.session['user_name']}' logado e dados salvos na sessão.")
     
-    return RedirectResponse(url="/loading")
+    return RedirectResponse(url="/pages-user")
 
 @app.get("/loading")
 def loading(request: Request):
     if "token_info" not in request.session:
-        return RedirectResponse(url="/login")
+        return RedirectResponse(url="/")
     return templates.TemplateResponse(request, "loading.html", {})
 
 @app.get("/pages-user")
@@ -146,25 +146,27 @@ def buscar_musicas_curtidas(request: Request, db: Session = Depends(get_db)):
 
     if not sp or not user_id:
         raise HTTPException(status_code=401, detail="Não autenticado.")
-
+    user = db.query(User).filter_by(spotify_id=user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado.")
     musicas = []
     offset = 0
-    limit_musicas = 5
+    limit = 20
+    limit_musicas = 2000
     while True:
-        results = sp.current_user_saved_tracks(limit=limit_musicas, offset=offset)
+        results = sp.current_user_saved_tracks(limit=limit, offset=offset)
         items = results.get("items", [])
         if not items:
             break
-
         for item in items:
             track_data = item["track"]
             liked_at = item.get("added_at")
-
+            images = track_data["album"].get("images", [])
+            imagem = images[0]["url"] if images else None
             # upsert na tabela tracks (insere só se não existir)
             track = db.query(Track).filter_by(spotify_id=track_data["id"]).first()
             if not track:
-                images = track_data["album"].get("images", [])
-                imagem = images[0]["url"] if images else None
+                
                 track = Track(
                     spotify_id=track_data["id"],
                     name=track_data["name"],
@@ -178,10 +180,10 @@ def buscar_musicas_curtidas(request: Request, db: Session = Depends(get_db)):
                 db.flush()  # garante que track.id é gerado antes do próximo insert
 
             # vincula a música ao usuário se ainda não estiver vinculada
-            link = db.query(UserTrack).filter_by(user_id=user_id, track_id=track.id).first()
+            link = db.query(UserTrack).filter_by(user_id=user.id, track_id=track.id).first()
             if not link:
                 db.add(UserTrack(
-                    user_id=user_id,
+                    user_id=user.id,
                     track_id=track.id,
                     liked_at=datetime.fromisoformat(liked_at.replace("Z", "+00:00")) if liked_at else None,
                 ))            
@@ -193,7 +195,7 @@ def buscar_musicas_curtidas(request: Request, db: Session = Depends(get_db)):
                 "imagem": imagem,
             })
 
-        offset += 50
+        offset += limit
         if len(musicas) >= limit_musicas:
             break
 
@@ -206,11 +208,14 @@ def musicas_curtidas(request: Request, db: Session = Depends(get_db)):
     user_spotify_id = request.session.get("user_id")
     user_name = request.session.get("user_name")
 
+    
     if "token_info" not in request.session:
+        logger.info("Usuário não autenticado. Redirecionando para login.")
         return RedirectResponse(url="/login")
 
     user = db.query(User).filter_by(spotify_id=user_spotify_id).first()
     if not user:
+        logger.info(f"Usuário com Spotify ID '{user_spotify_id}' não encontrado no banco de dados. Redirecionando para login.")
         return RedirectResponse(url="/loading")
 
     tracks = (
@@ -251,8 +256,7 @@ def criar_playlist(request: Request, body: CriarPlaylistRequest):
         logger.info(f"Usuário {user_name} criando playlist '{body.nome_playlist}'")
         
         # Cria a playlist usando o user_id da sessão
-        playlist = sp.user_playlist_create(
-            user=user_id, 
+        playlist = sp.current_user_playlist_create(
             name=body.nome_playlist,
             public=True,
             description="Criada via App SeuSomStyle"

@@ -269,7 +269,7 @@
     async function fetchMusicas() {
       try {
         console.log("Iniciando busca por músicas do usuário logado...");
-        const response = await fetch(`/buscar-minhas-musicas?state=${STATE}`);
+        const response = await fetch(`/buscar-minhas-musicas`);
         if (!response.ok) {
           throw new Error("Erro ao buscar músicas");
         }
@@ -283,7 +283,7 @@
           document.body.style.transition = 'opacity 0.5s ease';
           document.body.style.opacity = '0';
           setTimeout(() => {
-            window.location.href = `/pages-user`;
+            window.location.href = `/minhas-musicas`;
           }, 500);
         }, 800);
       } catch (error) {
